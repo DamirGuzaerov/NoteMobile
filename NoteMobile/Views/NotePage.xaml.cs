@@ -1,3 +1,4 @@
+using Android.Media;
 using NoteMobile.DataAccess;
 using NoteMobile.Models;
 using NoteMobile.ViewModels;
@@ -12,8 +13,9 @@ public partial class NotePage : ContentPage
 	private const string NoteTextKey = "NoteText";
 	private const string LastEditedNoteIdKey = "LastEditedNoteId";
 	private bool _lastChangesSaved = false;
+    private string audioFilePath;
 
-	public string ItemId
+    public string ItemId
 	{
 		set { LoadNote(value); }
 	}
@@ -139,4 +141,37 @@ public partial class NotePage : ContentPage
 			}
 		}
 	}
+
+    private async Task RecordAudio_Clicked()
+    {
+        try
+        {
+            var status = await Permissions.RequestAsync<Permissions.Microphone>();
+            if (status != PermissionStatus.Granted)
+            {
+                await DisplayAlert("Permission Denied", "Microphone permission is required to record audio.", "OK");
+                return;
+            }
+
+            audioFilePath = Path.Combine(FileSystem.CacheDirectory, $"audio_{DateTime.Now:yyyyMMddHHmmss}.wav");
+
+            await MediaRecorder.StartRecordingAsync(new MediaRecorderOptions(audioFilePath)
+            {
+                AudioRecordingQuality = MediaRecordingQuality.High
+            });
+
+            await Task.Delay(TimeSpan.FromSeconds(10));
+
+            await MediaRecorder.StopRecordingAsync();
+
+            if (BindingContext is Note note)
+            {
+                note.AudioFilePath = audioFilePath;
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Error", $"An error occurred while recording audio: {ex.Message}", "OK");
+        }
+    }
 }
