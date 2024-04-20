@@ -8,6 +8,7 @@
 	<array>
 		<integer>1</integer>
 		<integer>2</integer>
+		<string></string>
 	</array>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>

@@ -1,6 +1,7 @@
 using NoteMobile.DataAccess;
 using NoteMobile.Models;
 using NoteMobile.ViewModels;
+using ImageFormat = Camera.MAUI.ImageFormat;
 
 namespace NoteMobile.Views;
 
@@ -22,6 +23,7 @@ public partial class NotePage : ContentPage
 	{
 		_dbContext = dbContext;
 		InitializeComponent();
+		TakePhotoButton.IsVisible = false;
 		
 		string id;
 		if (Preferences.ContainsKey(LastEditedNoteIdKey) && !string.IsNullOrEmpty(Preferences.Get(LastEditedNoteIdKey, string.Empty)))
@@ -138,5 +140,29 @@ public partial class NotePage : ContentPage
 				Preferences.Set(LastEditedNoteIdKey, string.Empty);
 			}
 		}
+	}
+
+	private void CameraView_OnCamerasLoaded(object? sender, EventArgs e)
+	{
+		Console.Write("OnCamerasLoaded");
+		CameraView.Camera = CameraView.Cameras.First();
+	}
+
+	private void StartCamera_OnClicked(object? sender, EventArgs e)
+	{
+		if (CameraView.Camera != null)
+		{
+			MainThread.BeginInvokeOnMainThread(async () =>
+			{
+				TakePhotoButton.IsVisible = true;
+				await CameraView.StartCameraAsync();
+			});
+		}
+	}
+
+	private void Button_OnClicked(object? sender, EventArgs e)
+	{
+		TakePhotoButton.IsVisible = false;
+		Image.Source = CameraView.GetSnapShot(ImageFormat.JPEG);
 	}
 }

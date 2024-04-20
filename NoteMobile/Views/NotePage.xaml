@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:cv="clr-namespace:Camera.MAUI;assembly=Camera.MAUI"
              x:Class="NoteMobile.Views.NotePage"
              Title="Note"
              Shell.TabBarIsVisible="False">
@@ -9,7 +10,18 @@
                 Placeholder="Enter your note"
                 Text="{Binding Text}"
                 HeightRequest="100" />
+        
+        <cv:CameraView x:Name="CameraView" WidthRequest="300" HeightRequest="300" CamerasLoaded="CameraView_OnCamerasLoaded"/>
+        
+        <Button Text="Add photo"
+                Clicked="StartCamera_OnClicked" />
 
+        <Button x:Name="TakePhotoButton"
+                Text="Take photo"
+                Clicked="Button_OnClicked"/>
+        
+        <Image x:Name="Image" WidthRequest="300" HeightRequest="300"></Image>
+        
         <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
             <Button Text="Save"
                     Clicked="SaveButton_Clicked" />
