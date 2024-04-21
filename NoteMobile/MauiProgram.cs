@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using NoteMobile.DataAccess;
 using NoteMobile.ViewModels;
 using NoteMobile.Views;
+using Plugin.Maui.Audio;
 using About = NoteMobile.Views.About;
 using AllNotes = NoteMobile.ViewModels.AllNotes;
 
@@ -27,6 +28,7 @@ public static class MauiProgram
 		builder.Services.AddTransient<NotePage>();
 		builder.Services.AddSingleton<About>();
 		builder.Services.AddDbContext<AppDbContext>();
+		builder.Services.AddSingleton(AudioManager.Current);
 		
 #if DEBUG
 		builder.Logging.AddDebug();

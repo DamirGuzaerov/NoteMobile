@@ -40,28 +40,43 @@
 
     <ItemGroup>
         <!-- App Icon -->
-        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4"/>
+        <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
         <!-- Splash Screen -->
-        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128"/>
+        <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 
         <!-- Images -->
-        <MauiImage Include="Resources\Images\*"/>
-        <MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185"/>
+        <MauiImage Include="Resources\Images\*" />
+        <MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 
         <!-- Custom Fonts -->
-        <MauiFont Include="Resources\Fonts\*"/>
+        <MauiFont Include="Resources\Fonts\*" />
 
         <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
-        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)"/>
+        <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AndroidResource Remove="Resources\Новая папка1\**" />
+      <AndroidResource Remove="Resources\Новая папка\**" />
+      <Compile Remove="Resources\Новая папка1\**" />
+      <Compile Remove="Resources\Новая папка\**" />
+      <EmbeddedResource Remove="Resources\Новая папка1\**" />
+      <EmbeddedResource Remove="Resources\Новая папка\**" />
+      <MauiCss Remove="Resources\Новая папка1\**" />
+      <MauiCss Remove="Resources\Новая папка\**" />
+      <MauiXaml Remove="Resources\Новая папка1\**" />
+      <MauiXaml Remove="Resources\Новая папка\**" />
+      <None Remove="Resources\Новая папка1\**" />
+      <None Remove="Resources\Новая папка\**" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Camera.MAUI" Version="1.5.1" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0-preview.1.24081.2" />
-        <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
-        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+        <PackageReference Include="Plugin.AudioRecorder" Version="1.1.0" />
+        <PackageReference Include="Plugin.Maui.Audio" Version="2.1.0" />
     </ItemGroup>
 
     <ItemGroup>
