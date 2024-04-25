@@ -1,7 +1,7 @@
 using NoteMobile.DataAccess;
 using NoteMobile.Models;
 using NoteMobile.ViewModels;
-using ImageFormat = Camera.MAUI.ImageFormat;
+using Plugin.Maui.Audio;
 
 namespace NoteMobile.Views;
 
@@ -13,19 +13,25 @@ public partial class NotePage : ContentPage
 	private const string NoteTextKey = "NoteText";
 	private const string LastEditedNoteIdKey = "LastEditedNoteId";
 	private bool _lastChangesSaved = false;
+    private string audioFilePath;
 
-	public string ItemId
+    readonly IAudioManager _audioManager;
+    readonly IAudioRecorder _audioRecorder;
+
+    public string ItemId
 	{
 		set { LoadNote(value); }
 	}
 
-	public NotePage(AppDbContext dbContext)
+	public NotePage(AppDbContext dbContext, IAudioManager audioManager)
 	{
 		_dbContext = dbContext;
 		InitializeComponent();
-		TakePhotoButton.IsVisible = false;
-		
-		string id;
+
+        _audioManager = audioManager;
+        _audioRecorder = audioManager.CreateRecorder();
+
+        string id;
 		if (Preferences.ContainsKey(LastEditedNoteIdKey) && !string.IsNullOrEmpty(Preferences.Get(LastEditedNoteIdKey, string.Empty)))
 		{
 			id = Preferences.Get(LastEditedNoteIdKey, string.Empty);
@@ -35,9 +41,9 @@ public partial class NotePage : ContentPage
 			id = Guid.NewGuid().ToString();
 			Preferences.Set(LastEditedNoteIdKey, id);
 		}
-		
-		LoadNote(id);
-	}
+
+        LoadNote(id);
+    }
 
 	private async void SaveButton_Clicked(object sender, EventArgs e)
 	{
@@ -106,7 +112,7 @@ public partial class NotePage : ContentPage
 			noteModel.Text = note.Text;
 			if (!string.IsNullOrEmpty(Preferences.Get($"{NoteTextKey}_{note.Id}", string.Empty))) 
 				noteModel.Text = Preferences.Get($"{NoteTextKey}_{note.Id}", note.Text);
-		}
+        }
 		else
 		{
 			var tempNoteText = Preferences.Get($"{NoteTextKey}_{id}", string.Empty);
@@ -114,7 +120,16 @@ public partial class NotePage : ContentPage
 		}
 
 		BindingContext = noteModel;
-	}
+
+        if (note?.AudioFilePath != null)
+        {
+            PlayButton.IsVisible = true;
+        }
+        else
+        {
+            PlayButton.IsVisible = false;
+        }
+    }
 	
 	protected override void OnDisappearing()
 	{
@@ -142,27 +157,49 @@ public partial class NotePage : ContentPage
 		}
 	}
 
-	private void CameraView_OnCamerasLoaded(object? sender, EventArgs e)
-	{
-		Console.Write("OnCamerasLoaded");
-		CameraView.Camera = CameraView.Cameras.First();
-	}
+    private async void RecordButton_Clicked(object sender, EventArgs e)
+    {
+           var status = await Permissions.RequestAsync<Permissions.Microphone>();
+           if (status != PermissionStatus.Granted)
+           {
+               await DisplayAlert("Permission Denied", "Microphone permission is required to record audio.", "OK");
+               return;
+           }
 
-	private void StartCamera_OnClicked(object? sender, EventArgs e)
-	{
-		if (CameraView.Camera != null)
-		{
-			MainThread.BeginInvokeOnMainThread(async () =>
+    	if (!_audioRecorder.IsRecording)
+    	{
+			audioFilePath = Path.Combine(FileSystem.Current.AppDataDirectory, $"audio_{DateTime.Now:yyyyMMddHHmmss}.mp3");
+			using (File.Create(audioFilePath)) { }
+
+			await _audioRecorder.StartAsync(audioFilePath);
+    	}
+    	else
+    	{
+			await _audioRecorder.StopAsync();
+
+            PlayButton.IsVisible = true;
+
+            if (BindingContext is Note note)
 			{
-				TakePhotoButton.IsVisible = true;
-				await CameraView.StartCameraAsync();
-			});
-		}
-	}
+			    var noteItem = _dbContext.NoteItems.FirstOrDefault(n => n.Id == note.Id);
+			    if (noteItem != null)
+			    {
+			        noteItem.AudioFilePath = audioFilePath;
+			        await _dbContext.SaveChangesAsync();
+			    }
+			}
+        }
+    }
 
-	private void Button_OnClicked(object? sender, EventArgs e)
-	{
-		TakePhotoButton.IsVisible = false;
-		Image.Source = CameraView.GetSnapShot(ImageFormat.JPEG);
-	}
+    private async void PlayVoice_Clicked(object sender, EventArgs e)
+    {
+        if (BindingContext is Note note)
+        {
+            var noteItem = _dbContext.NoteItems.FirstOrDefault(i => i.Id == note.Id);
+
+            FileStream audioStream = File.OpenRead(noteItem.AudioFilePath);
+            var player = AudioManager.Current.CreatePlayer(audioStream);
+            player.Play();
+        }
+    }
 }

@@ -6,4 +6,6 @@ public class NoteItem
 	public string Text { get; set; }
 	public DateTime Date { get; set; }
 	public Geolocation? Geolocation { get; set; }
+
+	public string? AudioFilePath { get; set; }
 }
